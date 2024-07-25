@@ -8,12 +8,15 @@ const pool = new Pool({
   port: '5432',
   user: 'ube7c5dk497i19',
   password: 'pef2eff95f1eaf27a96893daebe2d8b6f27770f24221df086e371c52b40bb2024',
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 
-const executeQuery = async (query) => {
+const executeQuery = async (query, values) => {
   try {
-    const result = await pool.query(query);
+    const result = await pool.query(query, values);
     return result.rows;
   } catch (error) {
     console.error('Error executing query', error.stack);
@@ -22,5 +25,6 @@ const executeQuery = async (query) => {
 };
 
 module.exports = {
+  pool: pool,
   executeQuery,
 };
