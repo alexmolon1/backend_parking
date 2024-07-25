@@ -1,127 +1,26 @@
-//queries.js
+// queries.js
 
 const Pool = require('pg').Pool;
-/*
 
 const pool = new Pool({
-    host: 'localhost',
-    database: 'usuariosUTM',
-    port: '5432',
-    user: 'postgres',
-    password: '123456',
-});
-*/
-
-const pool = new Pool({
-    host: 'ec2-52-54-200-216.compute-1.amazonaws.com',
-    database: 'd18epr74clhuo4',
-    port: '5432',
-    user: 'lozkouwwzynyji',
-    password: '7f0d685bc56dabbbe20e3c603f8d848ff5ba805b8faec91660439dffbf6cbbc8',
-    ssl: {
-        rejectUnauthorized: false, // Esto evita errores por falta de CA en entornos de desarrollo
-    },
+  host: 'cbec45869p4jbu.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
+  database: 'd87l3tgcfp8khn',
+  port: '5432',
+  user: 'ube7c5dk497i19',
+  password: 'pef2eff95f1eaf27a96893daebe2d8b6f27770f24221df086e371c52b40bb2024',
 });
 
 
-const verifyUserLoginCreds = (request, response) => {
-    pool.query('SELECT * FROM usuario WHERE usu_correo = $1 AND usu_contrasenia = $2', [request.query.email, request.query.pswd], (error, results) => {
-        if (error) {
-            throw error;
-        }
-        response.status(200).json(results.rows);
-    });
-};
-
-const getUsers = (request, response) => {
-    pool.query('SELECT * FROM usuario ORDER BY id ASC', (error, results) => {
-        if (error) {
-            throw error;
-        }
-        response.status(200).json(results.rows);
-    });
-};
-
-const buscarPorCodigo = (request, response) => {
-    const { codigo } = request.params; // Obtener el código desde los parámetros de la URL
-
-    pool.query(`
-        SELECT
-            b.bie_codigo,
-            a.asi_ubicacion AS ubi_id,
-            b.bie_nombre,
-            b.bie_fechacreacion,
-            CONCAT(u.usu_nombre, ' ', u.usu_apellido) AS nombre_completo
-        FROM
-            public.bien AS b
-        JOIN
-            public.asignacionbien AS a ON b.bie_id = a.asi_bien
-        JOIN
-            public.usuario AS u ON a.asi_custodio = u.usu_id
-        WHERE
-            b.bie_codigo = $1;
-    `, [codigo], (error, results) => {
-        if (error) {
-            throw error;
-        }
-        response.status(200).json(results.rows);
-    });
-};
-
-
-
-const getBienesConUsuariosYUbicacion = (request, response) => {
-    pool.query(`
-        SELECT
-            b.bie_codigo,
-            a.asi_ubicacion AS ubi_id,
-            b.bie_nombre,
-            b.bie_fechacreacion,
-            CONCAT(u.usu_nombre, ' ', u.usu_apellido) AS nombre_completo
-        FROM
-            public.bien AS b
-        JOIN
-            public.asignacionbien AS a ON b.bie_id = a.asi_bien
-        JOIN
-            public.usuario AS u ON a.asi_custodio = u.usu_id;
-    `, (error, results) => {
-        if (error) {
-            throw error;
-        }
-        response.status(200).json(results.rows);
-    });
-};
-
-const getTotalRegistros = (request, response) => {
-    pool.query('SELECT COUNT(*) FROM bien', (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).json(results.rows[0].count);
-    });
-};
-
-const getNotificaciones = (request, response) => {
-    pool.query(`
-        SELECT solicitud.sol_id, solicitud.sol_descripcion, solicitud.sol_fecharealizacion, 
-               CONCAT(usuario.usu_nombre, ' ', usuario.usu_apellido) AS nombre_usuario, 
-               custodio.scc_destinatario
-        FROM solicitud
-        INNER JOIN solicitudcambiocustodio custodio ON solicitud.sol_id = custodio.scc_solicitudpadre
-        INNER JOIN usuario ON custodio.scc_destinatario = usuario.usu_id;
-    `, (error, results) => {
-        if (error) {
-            throw error;
-        }
-        response.status(200).json(results.rows);
-    });
+const executeQuery = async (query) => {
+  try {
+    const result = await pool.query(query);
+    return result.rows;
+  } catch (error) {
+    console.error('Error executing query', error.stack);
+    throw error;
+  }
 };
 
 module.exports = {
-    getUsers,
-    verifyUserLoginCreds,
-    buscarPorCodigo,
-    getBienesConUsuariosYUbicacion,
-    getTotalRegistros,
-    getNotificaciones,
+  executeQuery,
 };
